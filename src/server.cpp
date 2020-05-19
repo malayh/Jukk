@@ -4,7 +4,7 @@
 #include<netinet/in.h>
 #include<unistd.h>
 #include<pthread.h>
-
+#include<string.h>
 
 class TCPServer
 {
@@ -50,9 +50,11 @@ class TCPServer
     {
         handler_info *hInfo=(handler_info*)handlerInfo;
         char buffer[1024];
-        recv(hInfo->cFd,buffer,1024,0);
-        std::cout<<buffer<<std::endl;
-        send(hInfo->cFd,"Server",6,0);
+        recv(hInfo->cFd,buffer,3,0);
+        std::string yes="yes";
+        std::cout<<strcmp(buffer,yes.c_str())<<std::endl;
+        send(hInfo->cFd,"Ok",2,0);
+        
 
     }
 
