@@ -90,7 +90,10 @@ class TCPServer
                 int cFd;
                 cFd=accept(serverFd,(sockaddr*)&cAddr,&addrLen);
                 if(cFd<0)
-                    throw "Unable to accept connection.";
+                {
+                    std::cout<<"Failed to accpet connection"<<std::endl;
+                    break;
+                }
 
                 handler_info *hInfo= new handler_info;
                 pthread_t *thread=new pthread_t;

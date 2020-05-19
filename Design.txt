@@ -10,3 +10,6 @@
     -The FD is handed over to the packet interpreter as soon as connection is established
     -If first 8 bytes of the FD upon connection is not a recognized command it, will throw an exextion
     -The interpreter consumes the command part of the incommig packet from the FD, then hands over the control to command object
+
+
+[8 bytes:Command Name][8 Bytes: lenght of metadata(X)]][X bypes: metadata][8 bytes: lenght of payload(Y)][Y bytes: payload][8byte: commands]
