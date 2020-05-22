@@ -3,6 +3,9 @@
 #include <arpa/inet.h> 
 #include <unistd.h> 
 
+#include "util.h"
+#include "protocol.h"
+
 class TCPClient
 {
     private:
@@ -32,21 +35,37 @@ class TCPClient
         int retVal;
         retVal=connect(clientSocket,(sockaddr*)&sAddr,sizeof(sAddr));
         if(retVal<0)
-            throw "Unable to connect to server.";
+        {
+            std::cout<<"Unable to connect to server."<<std::endl;
+            exit(-1);
+        }
     }
 
     void test()
     {
-        char buffer[1024];
-        send(clientSocket,"Client",6,0);
-        read(clientSocket,buffer,1024);
+        char buffer[9];
+        std::string meta="meta data";
+
+        lpadIntToStr(Protocol::HEART_BEAT,buffer,8);
+        std::cout<<buffer<<std::endl;
+        send(clientSocket,buffer,8,0);
+        
+        lpadIntToStr(meta.length(),buffer,8);
+        send(clientSocket,buffer,8,0);
+        
+        send(clientSocket,meta.c_str(),meta.length(),0);
+
+        recv(clientSocket,buffer,8,0);
         std::cout<<buffer<<std::endl;
         close(clientSocket);
+
     }
 };
-int main(int argc, char const *argv[])
+
+
+int main()
 {
-    TCPClient client("192.168.43.15",8080);
+    TCPClient client("127.0.0.1",8080);
     client.eshtablishConnection();
     client.test();
     return 0;

@@ -1,28 +1,42 @@
 #ifndef protocol_h_
 #define protocol_h_
+#include<iostream>
 
 namespace Protocol
 {
+    typedef enum{
+        HEART_BEAT
+    } PacketType;
+
     class Command
     {
-        private:
-            Command(){};
         protected:
+            Command();
             int connFd;
-        public:
-            virtual ~Command(){};
-            virtual int process()=0;
-            Command(int fd)
-            {
-                this->connFd=fd;
-            }
+            std::string metaData;
 
-    };
-    class Heartbeat:public Protocol::Command
-    {
         public:
-        int process(int);
+            virtual int readMetaData();
+            virtual int process()=0;
+            virtual ~Command();
+            Command(int);
+    };    
+
+    class Heartbeat:public Command
+    {
+        private:
+        Heartbeat();
+
+        public:
+        int process() override;
+        Heartbeat(int);
+        ~Heartbeat();
     };
+
+    std::string readCommandFromNewConnection(int);
+    Command* getCommandHandler(std::string,int);
+
+
 }
 
 #endif

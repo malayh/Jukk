@@ -6,6 +6,8 @@
 #include<pthread.h>
 #include<string.h>
 
+#include "protocol.h"
+
 class TCPServer
 {
     private:
@@ -49,12 +51,21 @@ class TCPServer
     static void* handleIncommingConnetion(void *handlerInfo)
     {
         handler_info *hInfo=(handler_info*)handlerInfo;
-        char buffer[1024];
-        recv(hInfo->cFd,buffer,3,0);
-        std::string yes="yes";
-        std::cout<<strcmp(buffer,yes.c_str())<<std::endl;
-        send(hInfo->cFd,"Ok",2,0);
-        
+
+        std::string cmdStr=Protocol::readCommandFromNewConnection(hInfo->cFd);
+        Protocol::Command *cmd=Protocol::getCommandHandler(cmdStr,hInfo->cFd);
+        if(cmd==nullptr)
+        {
+            std::cout<<"Invalid Packet."<<std::endl;
+            send(hInfo->cFd,"Not Ok\0",7,0);
+            delete cmd;
+            return nullptr;
+        }
+
+        // std::cout<<cmdStr<<std::endl;
+        cmd->process();
+        send(hInfo->cFd,"Ok\0",7,0);
+        delete cmd;      
 
     }
 
@@ -112,6 +123,11 @@ class TCPServer
         }
     }
 
+    ~TCPServer()
+    {
+        joinHandlerThreads();
+        clearHandlers();
+    }
 };
 
 
