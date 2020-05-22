@@ -66,7 +66,7 @@ class TCPClient
         //end
         lpadIntToStr(Protocol::HEART_BEAT,buffer,8);
         send(clientSocket,buffer,8,0);
-        
+
         recv(clientSocket,buffer,8,0);
         std::cout<<buffer<<std::endl;
         close(clientSocket);
