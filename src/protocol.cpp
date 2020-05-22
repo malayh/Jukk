@@ -112,14 +112,61 @@ int Protocol::Command::readMetaData(){
 Protocol::Heartbeat::Heartbeat(){}
 Protocol::Heartbeat::Heartbeat(int fd): Command(fd){}
 Protocol::Heartbeat::~Heartbeat(){}
+int Protocol::Heartbeat::processPayload()
+{
+    /*
+    * Works similar to readMetaData
+    * Consumes the last 8 bytes of command as well
+    * Return -1 on failure
+    */
+    char payloadLen[9];
+    char *buffer;
+    int len;
+    int retVal;
+
+    retVal=recv(connFd,payloadLen,8,0);
+    if(retVal<8)
+        return -1;
+
+    payloadLen[8]='\0';
+    len=atoi(payloadLen);
+
+    if(len==0)
+    {
+        for(int i=0;i<8;i++)
+            if(payloadLen[i]!='0')
+                return -1;
+        
+
+        std::cout<<"No payload in heartbeat."<<std::endl;
+        return 0;
+    }
+
+    buffer=new char[len+1];
+    retVal=recv(connFd,buffer,len,0);
+    if(retVal<len)
+        return -1;
+
+    buffer[len]='\0';
+    std::cout<<"Heartbeat Payload:"<<buffer<<std::endl;
+
+    //eating out the last 8 byes of the packet
+    retVal=recv(connFd,buffer,8,0);
+
+    delete[] buffer;
+    return len;
+
+}
 int Protocol::Heartbeat::process()
 {
     int retVal=readMetaData();
     if(retVal<0)
         return -1;
-    
-    std::cout<<retVal<<std::endl;
-    std::cout<<metaData<<std::endl;
 
+    std::cout<<"Payload metadata:"<<metaData<<std::endl;
+    retVal=processPayload();
+    if(retVal<0)
+        return -1;
+        
     return 0;
 }

@@ -26,6 +26,7 @@ namespace Protocol
     {
         private:
         Heartbeat();
+        int processPayload();
 
         public:
         int process() override;

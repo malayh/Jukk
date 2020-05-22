@@ -45,16 +45,28 @@ class TCPClient
     {
         char buffer[9];
         std::string meta="meta data";
+        std::string payload="Hello from client!";
 
+        //command
         lpadIntToStr(Protocol::HEART_BEAT,buffer,8);
-        std::cout<<buffer<<std::endl;
         send(clientSocket,buffer,8,0);
         
+        //metalen
         lpadIntToStr(meta.length(),buffer,8);
         send(clientSocket,buffer,8,0);
-        
+        //meta
         send(clientSocket,meta.c_str(),meta.length(),0);
 
+        //paload len
+        lpadIntToStr(payload.length(),buffer,8);
+        send(clientSocket,buffer,8,0);
+        //payload
+        send(clientSocket,payload.c_str(),payload.length(),0);
+
+        //end
+        lpadIntToStr(Protocol::HEART_BEAT,buffer,8);
+        send(clientSocket,buffer,8,0);
+        
         recv(clientSocket,buffer,8,0);
         std::cout<<buffer<<std::endl;
         close(clientSocket);
