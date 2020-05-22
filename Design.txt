@@ -43,3 +43,11 @@
         -Peer finding protocol
         -Self update protocol
         -Propagation protocol
+    -FTP:
+        -FTP_ASK
+            -Ask for a file
+            -Meta: filepath
+            -Payload: None
+        -FTP_ASK_NF
+        -FTP_FILE
+        -FTP_FILE_ACK
