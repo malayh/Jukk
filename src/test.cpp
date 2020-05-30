@@ -3,7 +3,7 @@
 #include<math.h>
 #include<cstring>
 
-#include "protocol.h"
+#include "protocol/protocol.h"
 #include "util.h"
 
 int main(int argc, char const *argv[])

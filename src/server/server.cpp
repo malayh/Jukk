@@ -6,7 +6,11 @@
 #include<pthread.h>
 #include<string.h>
 
-#include "protocol.h"
+#include "protocol/protocol.h"
+
+class StateHolder{
+
+};
 
 class TCPServer
 {
@@ -52,20 +56,42 @@ class TCPServer
     {
         handler_info *hInfo=(handler_info*)handlerInfo;
 
-        std::string cmdStr=Protocol::readCommandFromNewConnection(hInfo->cFd);
-        Protocol::Command *cmd=Protocol::getCommandHandler(cmdStr,hInfo->cFd);
-        if(cmd==nullptr)
+        Protocol::Packet inPacket(hInfo->cFd);
+        int err=inPacket.readPacket();
+        if(err==-1)
         {
             std::cout<<"Invalid Packet."<<std::endl;
-            send(hInfo->cFd,"Not Ok\0",7,0);
-            delete cmd;
+            send(hInfo->cFd,"Bad\0",4,0);
             return nullptr;
         }
 
-        // std::cout<<cmdStr<<std::endl;
-        cmd->process();
-        send(hInfo->cFd,"Ok\0",7,0);
-        delete cmd;      
+        std::cout<<"Packe Type:"<<inPacket.getPacketType()<<std::endl;
+        std::cout<<"Meta data:";
+        const char* data=inPacket.getMetadata();
+        for(int i=0;i<inPacket.getMetadataLen();i++)
+            std::cout<<data[i];
+        std::cout<<std::endl;
+
+        std::cout<<"Payload:";
+        data=inPacket.getPayload();
+        for(int i=0;i<inPacket.getPayloadLen();i++)
+            std::cout<<data[i];
+        std::cout<<std::endl;
+
+        send(hInfo->cFd,"Good\0",5,0);
+
+        // std::string cmdStr=Protocol::readCommandFromNewConnection(hInfo->cFd);
+        // Protocol::Command *cmd=Protocol::getCommandHandler(cmdStr,hInfo->cFd);
+        // if(cmd==nullptr)
+        // {
+        //     std::cout<<"Invalid Packet."<<std::endl;
+        //     send(hInfo->cFd,"Not Ok\0",7,0);
+        //     delete cmd;
+        //     return nullptr;
+        // }
+        // cmd->process();
+        // send(hInfo->cFd,"Ok\0",7,0);
+        // delete cmd;      
 
     }
 

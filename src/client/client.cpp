@@ -4,7 +4,7 @@
 #include <unistd.h> 
 
 #include "util.h"
-#include "protocol.h"
+#include "protocol/protocol.h"
 
 class TCPClient
 {
@@ -48,7 +48,7 @@ class TCPClient
         std::string payload="Hello from client!";
 
         //command
-        lpadIntToStr(Protocol::HEART_BEAT,buffer,8);
+        lpadIntToStr(1,buffer,8);
         send(clientSocket,buffer,8,0);
         
         //metalen
