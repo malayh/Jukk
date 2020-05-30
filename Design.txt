@@ -7,13 +7,22 @@
 
 
 ==== Design ===========================================
+-Flow overview
+    -Server listens for incomming connection
+    -On a new connection: Control will be given to a command obeject, which will read metadata and payload
+    -Control is given to StateHolder, to see if this packet requires as state to be maintained
+        -If yes:
+            -Asks the Command for a key which can be used to let the same command object handle same type of packets
+        -If no:
+            -Delete the command object once processing is done
+
+
 -Packet Structure
     -8 bytes:Command Name
     -8 Bytes: lenght of metadata(X)
     -X bytes: metadata
     -8 bytes: lenght of payload(Y)
     -Y bytes: payload
-    -8byte: commands
 
 -Server:
     -Will be listening on a port
@@ -37,6 +46,8 @@
     
 
 -Roadmap:
+    -State maintainer
+        -?
     -Protocols to implement:
         -FTP like protocol
         -Command execution protocol
@@ -49,5 +60,13 @@
             -Meta: filepath
             -Payload: None
         -FTP_ASK_NF
+            -Reply to a FTP_ASK if file is not accessible
+            -Meta/Payload: None
         -FTP_FILE
+            -File data if file is accesible
+            -Meta: filepath, filelen , are there any more parts of the file remaining to send
+            -Payload: lenght of payload, payload
         -FTP_FILE_ACK
+            -Send this once FTP_FILE is received
+            -Meta: filepath, if more parts of the file remaining, send the offset, otherwise -1
+            -Payload: none
