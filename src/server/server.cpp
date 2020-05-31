@@ -8,10 +8,6 @@
 
 #include "protocol/protocol.h"
 
-class StateHolder{
-
-};
-
 class TCPServer
 {
     private:
