@@ -1,20 +1,35 @@
 #include<iostream>
-#include<cstdlib>
-#include<math.h>
-#include<cstring>
+#include<map>
 
-#include "protocol/protocol.h"
 #include "util.h"
+
+void util_parseMapFromStr()
+{
+    std::string input_1("key_1|value_1|someKey|val");
+    std::map<std::string,std::string> dict;
+
+    parseMapFromStr(input_1,dict);
+    auto i=dict.find("key_1");
+    if(i!=dict.end())
+        std::cout<<"Key: "<<i->first<<" Value: "<<i->second<<std::endl;
+
+}
+
+void util_parseStrFromMap()
+{
+    std::map<std::string,std::string> dict;
+    dict.insert(std::pair<std::string,std::string>("key1","OneVal"));
+    dict.insert(std::pair<std::string,std::string>("someKey","some Val"));
+
+    std::string str;
+    parseStrFromMap(dict,str);
+    std::cout<<str<<std::endl;
+
+}
 
 int main(int argc, char const *argv[])
 {
-
-    char strNum[100];
-    int n=5678;
-    int x=lpadIntToStr(n,strNum,45);
-    std::cout<<strNum<<std::endl;
-    // std::cout<<strNum[3]<<std::endl;
-    std::cout<<strlen(strNum)<<std::endl;
-    std::cout<<atoi(strNum)<<std::endl;
+    // util_parseMapFromStr();
+    util_parseStrFromMap();
     return 0;
 }
