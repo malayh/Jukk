@@ -21,9 +21,11 @@ namespace Protocol
         public:
             const std::map<std::string,std::string>* const getState(const std::string&);
             int insertOrUpdateState(std::string, std::map<std::string,std::string>&);
-            int deleteState(std::string&);
+            int deleteState(const std::string&);
             Stateholder();
             ~Stateholder();
+
+            void printStateInternals();
     };
 };
 #endif

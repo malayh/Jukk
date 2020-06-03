@@ -1,7 +1,10 @@
 #include<iostream>
 #include<map>
+#include<ctime>
+#include<unistd.h>
 
 #include "util.h"
+#include "protocol/stateholder.h"
 
 void util_parseMapFromStr()
 {
@@ -27,9 +30,58 @@ void util_parseStrFromMap()
 
 }
 
+void protocol_stateholder()
+{
+    typedef std::map<std::string,std::string> SMap;
+    SMap stateMap= {{"key_1","val 1"}, {"someKey","wierd value 2341345"}};
+    SMap stateMap_2= {{"someKye","vaasdf"}, {"someKey","valuasdfasdfe 2341345"},{"key_1","new val for key_1"}};
+
+    SMap *smPtr;
+
+    Protocol::Stateholder sh;
+    sh.insertOrUpdateState("token_1",stateMap);
+    sh.printStateInternals();
+
+    sh.insertOrUpdateState("new_token",stateMap_2);
+    sh.printStateInternals();
+
+    stateMap_2["newAddedKey"]="new added data";
+    sh.insertOrUpdateState("new_token",stateMap_2);
+    sh.printStateInternals();
+
+    sh.deleteState("token_1");
+    sh.printStateInternals();
+
+
+}
+
+void try_timeStuff()
+{
+    time_t t=time(0);
+    std::cout<<t<<std::endl;
+    sleep(5);
+    std::cout<<t-time(&t)<<std::endl;
+}
+
+void try_mapStuff()
+{
+    std::map<int,int> var={{1,10},{2,20}};
+    const std::map<int,int>* const ptr=&var;
+    auto i=var.find(1);
+
+    std::cout<<i->second<<std::endl;
+}
+
+
 int main(int argc, char const *argv[])
 {
+    // ---- Test stuff --------
     // util_parseMapFromStr();
-    util_parseStrFromMap();
+    // util_parseStrFromMap();
+    protocol_stateholder();
+
+    // ---- Try stuff --------
+    // try_timeStuff();
+    // try_mapStuff();
     return 0;
 }
