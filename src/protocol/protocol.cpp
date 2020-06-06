@@ -310,6 +310,7 @@ const char* Protocol::Packet::getPayload() const { return m_payload; }
 int Protocol::Packet::getMetadataLen() const { return m_metadataLen; }
 int Protocol::Packet::getPayloadLen() const { return m_payloadLen; }
 int Protocol::Packet::getPacketType() const { return m_packetType; }
+int Protocol::Packet::getConnFd() const { return m_connFd; }
 //-----------------------------------------
 
 

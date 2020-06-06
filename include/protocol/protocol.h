@@ -59,6 +59,7 @@ namespace Protocol
             int getPayloadLen() const;
             int getMetadataLen() const;
             int getPacketType() const;
+            int getConnFd() const;
             
 
     };
