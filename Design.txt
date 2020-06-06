@@ -1,53 +1,8 @@
 
--There is a interface that all the commands implement.
--There is a packet interpreter that looks at the packet and gives the control to command object to handle the connection
-    -The FD is handed over to the packet interpreter as soon as connection is established
-    -If first 8 bytes of the FD upon connection is not a recognized command it, will throw an exextion
-    -The interpreter consumes the command part of the incommig packet from the FD, then hands over the control to command object
-
-
-==== Design ===========================================
--Flow overview
-    -Server listens for incomming connection
-    -On a new connection: Control will be given to a command obeject, which will read metadata and payload
-    -Control is given to StateHolder, to see if this packet requires as state to be maintained
-        -If yes:
-            -Asks the Command for a key which can be used to let the same command object handle same type of packets
-        -If no:
-            -Delete the command object once processing is done
-
-
--Packet Structure
-    -8 bytes:Command Name
-    -8 Bytes: lenght of metadata(X)
-    -X bytes: metadata
-    -8 bytes: lenght of payload(Y)
-    -Y bytes: payload
-
--Server:
-    -Will be listening on a port
-    -Once new connecion arrives, user first 8 bytes to get a command obeject
-    -Pass the control to command object
-
--Command objects:
-    -Each Command handler object will have the function named process,
-    that will handle the request
-
--Define a new handler by:
-    -Adding it to enum Protocol::PacketType
-    -Create a class inheriting from Protocol::Command
-    -Add the Command in Protocol::getCommandHandle function
-
-=======================================================
-
--Commands Workings:
-    -Heart beat:
-        -This is sent by a client to say a client is alive
-    
 
 -Roadmap:
     -State maintainer
-        -?
+        -Done
     -Protocols to implement:
         -FTP like protocol
         -Command execution protocol
@@ -70,3 +25,21 @@
             -Send this once FTP_FILE is received
             -Meta: filepath, if more parts of the file remaining, send the offset, otherwise -1
             -Payload: none
+
+-Packet Structure
+    -8 bytes:Command Name
+    -8 Bytes: lenght of metadata(X)
+    -X bytes: metadata
+    -8 bytes: lenght of payload(Y)
+    -Y bytes: payload
+
+-Flow of Control:
+    -Server thread:
+        -Listens on the port
+        -On new connection creats a new thread and consumes the incomming packet
+            -Enques the packet to a PACKET_QUEUQ
+
+    -Main thread: It's a event look
+        -takes PACKET from PACKET_QUEUQ
+        -Looks for saved state (STATE) if any for PACKET.token
+        -Instantiates a Handler (HANLER) for PACKET.type with HANDLER.process(packet,meta) 
