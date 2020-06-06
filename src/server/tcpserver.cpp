@@ -85,7 +85,7 @@ void Server::TCPServer::handleIncommingConnetion(int fd,Server::TCPServer *self)
 
     int err=packet->readPacket();
 
-    if(err==-1)
+    if(err<0)
     {
         delete packet;
         return;
@@ -99,8 +99,10 @@ void Server::TCPServer::serverLoop(Server::TCPServer *self)
 {
     while(self->m_keepAlive)
     {
-        self->m_addrLen=sizeof(m_cAddr);
-        int cFd=accept(self->m_serverFd,(sockaddr*)&self->m_cAddr,&self->m_addrLen);
+        struct sockaddr_in cAddr;
+        socklen_t addrLen=sizeof(cAddr);
+        int cFd=-1;
+        cFd=accept(self->m_serverFd,(sockaddr*)&cAddr,&addrLen);
         if(cFd<0)
             break;
         std::thread _t(TCPServer::handleIncommingConnetion,cFd,self);
@@ -111,7 +113,11 @@ void Server::TCPServer::serverLoop(Server::TCPServer *self)
 
 
 
-
+/*
+    PacketQueue
+    :   This is a thread safe queue the server puts incoming packets in, for users of the server
+    to consume them.
+*/
 
 
 Server::PacketQueue::PacketQueue(){}
