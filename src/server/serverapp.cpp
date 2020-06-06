@@ -15,23 +15,30 @@ int main()
     }
     server.start();
 
-    for(int i=0;i<3;)
+    for(int i=0;;i++)
     {
         if(queue.isEmpty())
         {
-            std::cout<<"Nothing to read. Sleeping"<<std::endl;
-            sleep(3);
-            i++;
+            // std::cout<<"Nothing to read. Sleeping"<<std::endl;
+            sleep(1);
             continue;
         }
         else
         {
             Protocol::Packet *pkt=queue.pop();
-            const char *buffer=new char[pkt->getMetadataLen()];
-            buffer=pkt->getMetadata();
-            std::cout<<buffer<<std::endl;
-            delete pkt;
-            delete[] buffer;            
+            const char *meta=pkt->getMetadata();
+            const char *payload=pkt->getPayload();
+            
+            for(int i=0;i<pkt->getMetadataLen();i++)
+                std::cout<<meta[i];
+            std::cout<<std::endl;
+
+            for(int i=0;i<pkt->getPayloadLen();i++)
+                std::cout<<payload[i];
+            std::cout<<std::endl;
+            
+            std::cout<<pkt->getConnFd()<<std::endl<<std::endl;
+            delete pkt;            
         }
     }
     server.terminate();

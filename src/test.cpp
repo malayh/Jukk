@@ -2,6 +2,8 @@
 #include<map>
 #include<ctime>
 #include<unistd.h>
+#include<thread>
+#include<vector>
 
 #include "util.h"
 #include "protocol/stateholder.h"
@@ -72,16 +74,36 @@ void try_mapStuff()
     std::cout<<i->second<<std::endl;
 }
 
+void threadWorker()
+{
+    long long sum=0;
+    for(long long i=0;i<100000;i++)
+        sum+=i;
+
+    // std::cout<<sum<<std::endl;
+}
+
+void try_thread()
+{
+    std::vector<std::thread> threads;
+    for(int i=0;i<100000;i++)
+        threads.push_back(std::thread(threadWorker));
+
+    for(auto i=threads.begin();i!=threads.end();i++)
+        i->join();
+}
+
 
 int main(int argc, char const *argv[])
 {
     // ---- Test stuff --------
     // util_parseMapFromStr();
     // util_parseStrFromMap();
-    protocol_stateholder();
+    // protocol_stateholder();
 
     // ---- Try stuff --------
     // try_timeStuff();
     // try_mapStuff();
+    // try_thread();
     return 0;
 }
