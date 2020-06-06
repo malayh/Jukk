@@ -29,8 +29,7 @@ namespace Server
     {
         private:
             int m_port, m_serverFd, m_connLimit;
-            socklen_t m_addrLen;
-            struct sockaddr_in m_sAddr,m_cAddr;
+            struct sockaddr_in m_sAddr;
 
             std::atomic<bool> m_keepAlive;
             std::thread m_serverLoop;
