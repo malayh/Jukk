@@ -1,5 +1,6 @@
 #include<iostream>
 #include<sys/socket.h>
+#include<unistd.h>
 #include<string.h>
 
 #include "protocol/protocol.h"
@@ -183,6 +184,8 @@ Protocol::Packet::~Packet()
         delete[] m_metadata;
     if(m_payloadLen>0)
         delete[] m_payload;
+
+    close(m_connFd);
 }
 Protocol::Packet::Packet(int fd)
 {
@@ -228,6 +231,8 @@ int Protocol::Packet::readMetadata()
     *
     * Return:
     *   -1 on failure, lenght of metadata read othewise
+    *   
+    *   Notice that m_metadata is NOT null terminated
     */
 
     char buffer[9];
@@ -253,6 +258,7 @@ int Protocol::Packet::readMetadata()
         return 0;
     }
 
+    //Notice that metadata is not null terminated.
     m_metadata=new char[m_metadataLen];
     err=recv(m_connFd,m_metadata,m_metadataLen,0);
     return err;    
@@ -266,6 +272,9 @@ int Protocol::Packet::readPayload()
     * 
     * Return:
     *   -1 on failure, lenght of payload read othewise
+    *   
+    *   Notice that m_payload is not null terminated
+    * 
     */
 
     char buffer[9];
@@ -285,6 +294,7 @@ int Protocol::Packet::readPayload()
 
         return 0;
     }
+    //Notice that payload is not null terminated
     m_payload=new char[m_payloadLen];
     err=recv(m_connFd,m_payload,m_payloadLen,0);
     return err; 
@@ -297,11 +307,11 @@ int Protocol::Packet::readPacket()
 
     err=readMetadata();
     if(err==-1)
-        return -1;
+        return -2;
 
     err=readPayload();
     if(err==-1)
-        return -1;
+        return -3;
 
     return 0;
 }
