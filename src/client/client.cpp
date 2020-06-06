@@ -63,12 +63,9 @@ class TCPClient
         //payload
         send(clientSocket,payload.c_str(),payload.length(),0);
 
-        //end
-        lpadIntToStr(Protocol::HEART_BEAT,buffer,8);
-        send(clientSocket,buffer,8,0);
-
-        recv(clientSocket,buffer,8,0);
-        std::cout<<buffer<<std::endl;
+        // recv(clientSocket,buffer,8,0);
+        // std::cout<<buffer<<std::endl;
+        // sleep(2);
         close(clientSocket);
 
     }
