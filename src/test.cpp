@@ -40,7 +40,7 @@ void protocol_stateholder()
 
     SMap *smPtr;
 
-    Protocol::Stateholder sh;
+    Server::Stateholder sh;
     sh.insertOrUpdateState("token_1",stateMap);
     sh.printStateInternals();
 

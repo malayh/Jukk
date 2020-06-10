@@ -3,18 +3,18 @@
 
 #include "server/stateholder.h"
 
-Protocol::Stateholder::Stateholder() : m_expiryTimeout_sec(20) 
+Server::Stateholder::Stateholder() : m_expiryTimeout_sec(20) 
 {
     //seting timeout to 20 seconds
 }
 
-Protocol::Stateholder::~Stateholder()
+Server::Stateholder::~Stateholder()
 {
     for(auto i=m_states.begin();i!=m_states.end();i++)
         delete i->second;
 }
 
-const std::map<std::string,std::string>* const Protocol::Stateholder::getState(const std::string &token)
+const std::map<std::string,std::string>* const Server::Stateholder::getState(const std::string &token)
 {
     /*
     * For a given "token" return a const ptr to a const map of <key,value>
@@ -27,7 +27,7 @@ const std::map<std::string,std::string>* const Protocol::Stateholder::getState(c
         return i->second;
 }
 
-int Protocol::Stateholder::insertOrUpdateState(std::string token, std::map<std::string,std::string> &stateMap)
+int Server::Stateholder::insertOrUpdateState(std::string token, std::map<std::string,std::string> &stateMap)
 {
     /* m_states is of structure { "token" : { "key_1":"val_1", "key_2":"val_2" } }
     *  m_stateTimestamps is of structure { "token" : timestamp }
@@ -59,18 +59,18 @@ int Protocol::Stateholder::insertOrUpdateState(std::string token, std::map<std::
     return 0;   
 }
 
-int Protocol::Stateholder::insertOrUpdateNowTimestamp(const std::string &token)
+int Server::Stateholder::insertOrUpdateNowTimestamp(const std::string &token)
 {
     m_stateTimestamps[token]=time(0);
     return 0;
 }
 
-int Protocol::Stateholder::deleteTimestamp(const std::string &token)
+int Server::Stateholder::deleteTimestamp(const std::string &token)
 {
     return m_stateTimestamps.erase(token);
 }
 
-int Protocol::Stateholder::deleteState(const std::string &token)
+int Server::Stateholder::deleteState(const std::string &token)
 {
     auto found=m_states.find(token);
     if(found==m_states.end())
@@ -82,7 +82,7 @@ int Protocol::Stateholder::deleteState(const std::string &token)
     return m_states.erase(token);
 }
 
-void Protocol::Stateholder::printStateInternals()
+void Server::Stateholder::printStateInternals()
 {
     std::cout<<"-----------------------------"<<std::endl;
     for(auto i=m_states.begin();i!=m_states.end();i++)
