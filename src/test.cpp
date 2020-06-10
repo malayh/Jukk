@@ -6,7 +6,7 @@
 #include<vector>
 
 #include "util.h"
-#include "protocol/stateholder.h"
+#include "server/stateholder.h"
 
 void util_parseMapFromStr()
 {

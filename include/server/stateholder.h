@@ -1,5 +1,5 @@
-#ifndef jukk_protocol_stateholder_h
-#define jukk_protocol_stateholder_h
+#ifndef jukk_server_stateholder_h
+#define jukk_server_stateholder_h
 
 #include<string>
 #include<map>
