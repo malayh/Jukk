@@ -8,38 +8,6 @@ namespace Protocol
         HEART_BEAT
     } PacketType;
 
-    class Command
-    {
-        protected:
-            Command();
-            int connFd;
-            std::string metaData;
-
-        public:
-            virtual void setConnFd(int);
-            virtual ~Command();
-            virtual int readMetaData();
-            virtual bool isStateLess()=0;
-            virtual int process()=0;
-            Command(int);
-    };    
-
-    class Heartbeat:public Command
-    {
-        private:
-        Heartbeat();
-        int processPayload();
-
-        public:
-        int process() override;
-        bool isStateLess() override;
-        Heartbeat(int);
-        ~Heartbeat();
-    };
-
-    std::string readCommandFromNewConnection(int);
-    Command* getCommandHandler(std::string,int);
-
     class Packet
     {
         private:
