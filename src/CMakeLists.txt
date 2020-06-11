@@ -6,7 +6,7 @@ set(CMAKE_CXX_FLAGS "-g")
 
 # Libraries 
 add_library(protocol protocol/protocol.cpp)
-add_library(stateholder protocol/stateholder.cpp)
+add_library(stateholder server/stateholder.cpp)
 add_library(tcpserver server/tcpserver.cpp)
 add_library(util util.cpp)
 

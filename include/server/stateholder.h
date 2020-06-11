@@ -5,7 +5,7 @@
 #include<map>
 #include<ctime>
 
-namespace Protocol
+namespace Server
 {
     class Stateholder
     {
