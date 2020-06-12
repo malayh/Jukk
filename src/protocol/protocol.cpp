@@ -4,7 +4,7 @@
 #include<string.h>
 
 #include "protocol/protocol.h"
-
+#include "util.h"
 
 /*
 *   Packet
@@ -12,14 +12,17 @@
 */
 
 
+//-------- Protocol::Packet ---------------------------------
 Protocol::Packet::Packet(){}
 Protocol::Packet::~Packet()
 {
+    //Remember this one closed the fd
+
     if(m_metadataLen>0)
         delete[] m_metadata;
     if(m_payloadLen>0)
         delete[] m_payload;
-
+    
     close(m_connFd);
 }
 Protocol::Packet::Packet(int fd)
@@ -156,7 +159,144 @@ int Protocol::Packet::getMetadataLen() const { return m_metadataLen; }
 int Protocol::Packet::getPayloadLen() const { return m_payloadLen; }
 int Protocol::Packet::getPacketType() const { return m_packetType; }
 int Protocol::Packet::getConnFd() const { return m_connFd; }
-//-----------------------------------------
 
+//-------- Protocol::PackerBuffer --------------------------------
+/*
+*   Protocol::PacketBuffer
+*   :   It keeps chunks of meta data *COPIED* in memory. You can write the packet onto a fd when buffer is ready
+*       It stores chunks in a vector::pair where pair->first=size of chuch  pair->second=chunk
+*/
+Protocol::PacketBuffer::PacketBuffer()
+{
+    m_payloadLen=0;
+    m_metaLen=0;
+    m_packetType=-1;
+}
 
+Protocol::PacketBuffer::~PacketBuffer()
+{
+    for(auto i: m_metadata)
+        if (i.first>0)
+            delete[] i.second;
+    
+    for(auto i:m_payload)
+        if(i.first>0)
+            delete[] i.second;
+}
 
+int Protocol::PacketBuffer::setPacketType(int type)
+{
+    m_packetType=type;
+}
+
+int Protocol::PacketBuffer::putMetadata(const std::string &str)
+{
+    if(!str.length())
+        return 0;
+
+    char *meta = new char[str.length()+1];
+    memcpy(meta,str.c_str(),str.length()+1);
+    m_metadata.push_back(std::pair<int,char*>(str.length()+1,meta));
+
+    m_metaLen+=str.length()+1;
+
+    return str.length()+1;
+}
+
+int Protocol::PacketBuffer::putMetadata(const char *str,int len)
+{
+    if(!len)
+        return 0;
+
+    char *meta = new char[len];
+    memcpy(meta,str,len);
+    m_metadata.push_back(std::pair<int,char*>(len,meta));
+
+    m_metaLen+=len;
+
+    return len;
+}
+
+int Protocol::PacketBuffer::putPayload(const std::string &str)
+{
+    if(!str.length())
+        return 0;
+
+    char *pl = new char[str.length()+1];
+    memcpy(pl,str.c_str(),str.length()+1);
+    m_payload.push_back(std::pair<int,char*>(str.length()+1,pl));
+
+    m_payloadLen+=str.length()+1;
+
+    return str.length()+1;
+}
+
+int Protocol::PacketBuffer::putPayload(const char *str,int len)
+{
+    if(!len)
+        return 0;
+
+    char *pl = new char[len];
+    memcpy(pl,str,len);
+    m_payload.push_back(std::pair<int,char*>(len,pl));
+
+    m_payloadLen+=len;
+
+    return len;
+}
+
+int Protocol::PacketBuffer::sendPacketOnFd(int fd)
+{
+    /*
+    *   writes buffer to fd. 
+    *   Returns:
+    *        0 on success
+    *       -1 if type is not set
+    *       -2 if error occures during sending packet type
+    *       -3 if error occures during sending meta data
+    *       -4 if error occures during sending payload    *  
+    */
+
+    if(m_packetType==-1)
+        return -1;
+
+    int err;
+    char buffer[9];
+
+    // Sending packet type
+    lpadIntToStr(m_packetType,buffer,8);
+    err=send(fd,buffer,8,0);
+    if(err==-1)
+        return -2;
+
+    // Sending metadata length
+    lpadIntToStr(m_metaLen,buffer,8);
+    err=send(fd,buffer,8,0);
+    if(err==-1)
+        return -3;
+
+    // sending metadata chunks
+    for(auto i:m_metadata)
+    {
+        err=send(fd,i.second,i.first,0);
+        if(err==-1)
+            return -3;
+    }
+    
+    // sending payload lenght
+    lpadIntToStr(m_payloadLen,buffer,8);
+    err=send(fd,buffer,8,0);
+    if(err==-1)
+        return -4;
+
+    //sending payload chunks
+    for(auto i:m_payload)
+    {
+        err=send(fd,i.second,i.first,0);
+        if(err==-1)
+            return -4;
+    }
+
+    return 0;
+    
+}

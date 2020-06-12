@@ -1,6 +1,8 @@
 #ifndef protocol_h_
 #define protocol_h_
 #include<iostream>
+#include<vector>
+#include<utility>
 
 namespace Protocol
 {
@@ -28,8 +30,31 @@ namespace Protocol
             int getMetadataLen() const;
             int getPacketType() const;
             int getConnFd() const;
-            
+    };
+    
+    class PacketBuffer
+    {
+        private:
+            int m_packetType, m_metaLen, m_payloadLen;
+            std::vector<std::pair<int,char*>> m_metadata;
+            std::vector<std::pair<int,char*>> m_payload;
+        public:
+            PacketBuffer();
+            PacketBuffer(const PacketBuffer&) = delete;
+            ~PacketBuffer();
 
+            int setPacketType(int);
+
+            int putMetadata(const char*,int);
+            int putMetadata(const std::string&);
+
+            int putPayload(const char *,int);
+            int putPayload(const std::string&);
+
+            int clearMetadata();
+            int clearPayload();
+
+            int sendPacketOnFd(int);
     };
 }
 

@@ -21,6 +21,9 @@ add_executable(server server/serverapp.cpp)
 add_executable(tests test.cpp)
 
 # Linkings
+target_link_libraries(protocol
+                        PUBLIC util
+)
 target_link_libraries(client 
                         PUBLIC protocol
                         PUBLIC util
