@@ -45,6 +45,9 @@
         "ctime": "cpp",
         "chrono": "cpp",
         "ratio": "cpp",
-        "thread": "cpp"
-    }
+        "thread": "cpp",
+        "condition_variable": "cpp",
+        "mutex": "cpp"
+    },
+    "workbench.iconTheme": "eq-material-theme-icons"
 }
