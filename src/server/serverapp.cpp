@@ -1,13 +1,14 @@
 #include<iostream>
 #include<thread>
 #include<unistd.h>
+#include<vector>
 
 #include "server/tcpserver.h"
 
 int main()
 {
     Server::PacketQueue queue;
-    Server::TCPServer server(8080,50,&queue);
+    Server::TCPServer server(8080,500,&queue);
     int err=server.initialize();
     if(err<0)
     {
@@ -15,7 +16,9 @@ int main()
     }
     server.start();
 
-    for(int i=0;;i++)
+    std::vector<Protocol::Packet*> pkts;
+
+    for(int i=0;i<100;i++)
     {
         if(queue.isEmpty())
         {
@@ -38,12 +41,14 @@ int main()
             std::cout<<std::endl;
             
             std::cout<<pkt->getConnFd()<<std::endl<<std::endl;
-            delete pkt;            
+            pkts.push_back(pkt);            
         }
     }
+    for(auto i: pkts)
+    {
+        delete i;
+    }
     server.terminate();
-
-
 
 }    
     
