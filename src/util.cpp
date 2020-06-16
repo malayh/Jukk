@@ -4,7 +4,7 @@
 #include <vector>
 #include "util.h"
 
-int lpadIntToStr(int num,char *buffer, int len)
+int  Util::padIntToStr(int num,char *buffer, int len)
 {
     /*
     * It will lpad 'num' with 0s till the desired value of 'len'
@@ -22,7 +22,7 @@ int lpadIntToStr(int num,char *buffer, int len)
     return 0;
 }
 
-int parseMapFromStr(const std::string &str, std::map<std::string,std::string> &kv)
+int Util::parseMapFromStr(const std::string &str, std::map<std::string,std::string> &kv)
 {
     /*
     *   Reads pipe "|" delimited string "str", and parse key value pairs, and add them
@@ -70,7 +70,7 @@ int parseMapFromStr(const std::string &str, std::map<std::string,std::string> &k
 }
 
 
-int parseStrFromMap(const std::map<std::string,std::string> &kv,std::string &str)
+int Util::parseStrFromMap(const std::map<std::string,std::string> &kv,std::string &str)
 {
     if(kv.empty())
         return -1;
