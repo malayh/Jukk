@@ -1,7 +1,22 @@
 
 
+-Bugs
+    -#1: RESOLVED :   In main server loop accept function returns same file descriptor.
+    : Details
+        : It does not return the same fd if all the connections are made parallerly.
+        The issue is it reuses the old fd (why?) then reads from it.
+
+    -#2: OPEN : TCPServer::terminate() blocks untill it gets one last connection to get out of the main server loop. 
+
+    -#3: OPEN : When sending packets, sometime meta data or payload is not fully received ( or sent(?))
+    : Details
+        : Part of the meta/payload is not read by server
+        
+          
 -Roadmap:
     -State maintainer
+        -Done
+    -PacketBuffer
         -Done
     -Protocols to implement:
         -FTP like protocol
