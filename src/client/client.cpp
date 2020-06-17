@@ -3,13 +3,12 @@
 #include <arpa/inet.h> 
 #include <unistd.h> 
 
-#include "util.h"
 #include "protocol/protocol.h"
 
 class TCPClient
 {
     private:
-    int port, clientSocket;
+    int port, m_clientSocket;
     struct sockaddr_in sAddr;
 
     TCPClient(){};
@@ -24,8 +23,8 @@ class TCPClient
         if(retVal<0)
             throw "Invalid Address.";
 
-        clientSocket=socket(AF_INET,SOCK_STREAM,0);
-        if(clientSocket<0)
+        m_clientSocket=socket(AF_INET,SOCK_STREAM,0);
+        if(m_clientSocket<0)
             throw "Unable to create socket.";
 
     }
@@ -33,7 +32,7 @@ class TCPClient
     void eshtablishConnection()
     {
         int retVal;
-        retVal=connect(clientSocket,(sockaddr*)&sAddr,sizeof(sAddr));
+        retVal=connect(m_clientSocket,(sockaddr*)&sAddr,sizeof(sAddr));
         if(retVal<0)
         {
             std::cout<<"Unable to connect to server."<<std::endl;
@@ -43,30 +42,25 @@ class TCPClient
 
     void test()
     {
-        char buffer[9];
+        Protocol::PacketBuffer pBuffer;
+
         std::string meta="meta data";
-        std::string payload="Hello from client!";
+        std::string payload=" Hello from client!";
 
-        //command
-        lpadIntToStr(1,buffer,8);
-        send(clientSocket,buffer,8,0);
+        pBuffer.putPayload("Another Payload");
+        pBuffer.putMetadata("|somemeta|");
+        pBuffer.putMetadata(meta);
+        pBuffer.putPayload(payload.c_str(),payload.length());
+        pBuffer.setPacketType(Protocol::HEART_BEAT);
+        pBuffer.sendPacketOnFd(m_clientSocket);
+        pBuffer.putMetadata("|sasdf|");
+        int err=pBuffer.sendPacketOnFd(m_clientSocket);
+
+        std::cout<<err<<std::endl;
         
-        //metalen
-        lpadIntToStr(meta.length(),buffer,8);
-        send(clientSocket,buffer,8,0);
-        //meta
-        send(clientSocket,meta.c_str(),meta.length(),0);
-
-        //paload len
-        lpadIntToStr(payload.length(),buffer,8);
-        send(clientSocket,buffer,8,0);
-        //payload
-        send(clientSocket,payload.c_str(),payload.length(),0);
-
-        // recv(clientSocket,buffer,8,0);
-        // std::cout<<buffer<<std::endl;
-        // sleep(2);
-        close(clientSocket);
+        close(m_clientSocket);
+        // eshtablishConnection();
+        
 
     }
 };
