@@ -6,6 +6,7 @@
 #include<iostream>
 #include<sys/socket.h>
 #include<unistd.h>
+#include<time.h>
 
 void readFromFileAsSocket()
 {
@@ -31,9 +32,27 @@ void fileAndLineMacro()
     std::cout<<__FILE__<<std::endl;
 }
 
+int getTimestamp(char *buffer, int maxsize)
+{
+    if(maxsize<20)
+        return -1;
+
+    time_t t=time(NULL);
+    strftime(buffer,maxsize,"%T %d/%m/%y",localtime(&t));
+    return 0;
+}
+void timeStamp()
+{
+    char buffer[20];
+    getTimestamp(buffer,20);
+   
+    std::cout<<buffer<<std::endl;
+}
+
 int main()
 {
     // readFromFileAsSocket();
-    fileAndLineMacro();
+    // fileAndLineMacro();
+    timeStamp();
     return 0;
 }
