@@ -4,6 +4,7 @@
 
 #include<assert.h>
 #include "protocol/protocol.h"
+#include "util.h"
 
 void test_Packet()
 {
@@ -18,7 +19,8 @@ void test_Packet()
     char *m="metadata";
     char *p="payload";
 
-    Protocol::Packet pkt(fd);
+    Util::Logger logger("../resource/test/packetTest.log",Util::Logger::TRACE);
+    Protocol::Packet pkt(fd,&logger);
     int err=pkt.readPacket();
     assert(err==0);
 

@@ -22,11 +22,12 @@
         connection and put to the queue.
 */
 
-Server::TCPServer::TCPServer(int port,int connLimit,Server::PacketQueue *pQ)
+Server::TCPServer::TCPServer(int port,int connLimit,Server::PacketQueue *pQ,Util::Logger *lg)
 {
     m_port=port;
     m_connLimit=connLimit;
     m_outputQueue=pQ;
+    m_logger=lg;
 
     m_sAddr.sin_family=AF_INET;
     m_sAddr.sin_addr.s_addr=INADDR_ANY;
@@ -81,12 +82,14 @@ void Server::TCPServer::terminate()
 
 void Server::TCPServer::handleIncommingConnetion(int fd,Server::TCPServer *self)
 {
-    Protocol::Packet *packet = new Protocol::Packet(fd);
+    Protocol::Packet *packet = new Protocol::Packet(fd,self->m_logger);
 
     int err=packet->readPacket();
 
     if(err<0)
     {
+        self->m_logger->trace("TCPServer::handleIncommingConnetion","Error reading packet on FD: "+std::to_string(fd));
+
         delete packet;
         return;
     }
@@ -103,8 +106,11 @@ void Server::TCPServer::serverLoop(Server::TCPServer *self)
         socklen_t addrLen=sizeof(cAddr);
         int cFd=-1;
         cFd=accept(self->m_serverFd,(sockaddr*)&cAddr,&addrLen);
+        self->m_logger->trace("TCPServer::serverLoop","Accecpted connection on FD: "+std::to_string(cFd));
+
         if(cFd<0)
             break;
+
         std::thread _t(TCPServer::handleIncommingConnetion,cFd,self);
         _t.detach();        
     }

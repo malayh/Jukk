@@ -96,7 +96,7 @@ Util::Logger::Logger(const std::string &filepath,Util::Logger::Loglevel loglevel
     m_filePath[filepath.length()]='\0';
 
     m_logLevel=loglevel;    
-    m_logFile.open(m_filePath,std::ios::app);
+    m_logFile.open(m_filePath,std::ios::app|std::ios::out);
 
     m_timestampFormat="%T %d/%m/%y";
 }

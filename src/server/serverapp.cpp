@@ -4,11 +4,14 @@
 #include<vector>
 
 #include "server/tcpserver.h"
+#include "util.h"
 
 int main()
 {
     Server::PacketQueue queue;
-    Server::TCPServer server(8080,500,&queue);
+    Util::Logger logger("../log/serverapp.log",Util::Logger::TRACE);
+
+    Server::TCPServer server(8080,500,&queue,&logger);
     int err=server.initialize();
     if(err<0)
     {

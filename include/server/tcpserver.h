@@ -10,6 +10,7 @@
 #include<atomic>
 
 #include "protocol/protocol.h"
+#include "util.h"
 
 namespace Server
 {
@@ -36,6 +37,8 @@ namespace Server
 
             PacketQueue *m_outputQueue;
 
+            Util::Logger *m_logger;
+
             TCPServer();
             static void handleIncommingConnetion(int,TCPServer*);
             static void serverLoop(TCPServer*);
@@ -44,7 +47,7 @@ namespace Server
             void start();
             void terminate();
             int initialize();
-            TCPServer(int,int,PacketQueue *);
+            TCPServer(int,int,PacketQueue *,Util::Logger*);
             ~TCPServer();
     };
 };

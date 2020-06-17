@@ -51,12 +51,13 @@ Protocol::Packet::~Packet()
     
     close(m_connFd);
 }
-Protocol::Packet::Packet(int fd)
+Protocol::Packet::Packet(int fd,Util::Logger *logger)
 {
     m_connFd=fd;
     m_packetType=-1;
     m_payloadLen=-1;
     m_metadataLen=-1;
+    m_logger=logger;
 }
 int Protocol::Packet::readPacketType()
 {
@@ -67,6 +68,7 @@ int Protocol::Packet::readPacketType()
     * Returns -1 if error, 0 otherwise
     * 
     */
+    m_logger->trace("Packet::readPacketType","Reading packet type on FD:"+std::to_string(m_connFd));
 
     char buffer[9];
     int err=recv(m_connFd,buffer,8,0);
@@ -76,13 +78,16 @@ int Protocol::Packet::readPacketType()
     
     buffer[8]='\0';
     int packet=atoi(buffer);
+
+    m_logger->trace("Packet::readPacketType","FD: "+std::to_string(m_connFd)+" Packet type buffer:"+std::string(buffer));
     if(packet==0)
     {
         for(int i=0;i<8;i++)
             if(buffer[i]!='0')
                 return -1;
     }
-
+    m_logger->trace("Packet::readPacketType","FD: "+std::to_string(m_connFd)+"Packet Type:"+std::to_string(packet));
+    
     m_packetType=packet;
     return 0;    
 }
@@ -98,6 +103,7 @@ int Protocol::Packet::readMetadata()
     *   
     *   Notice that m_metadata is NOT null terminated
     */
+    m_logger->trace("Packet::readMetadata","Reading metadata on FD:"+std::to_string(m_connFd));
 
     char buffer[9];
 
@@ -106,6 +112,7 @@ int Protocol::Packet::readMetadata()
         return -1;
 
     buffer[8]='\0';
+    m_logger->trace("Packet::readMetada","FD: "+std::to_string(m_connFd)+" Metalen buffer:"+std::string(buffer));
     m_metadataLen=atoi(buffer);
 
     //If we recieve a string that cannot be parser to number, atol will
@@ -122,9 +129,15 @@ int Protocol::Packet::readMetadata()
         return 0;
     }
 
+    
     //Notice that metadata is not null terminated.
     m_metadata=new char[m_metadataLen];
     err=recv(m_connFd,m_metadata,m_metadataLen,0);
+
+    m_logger->debug("Packet::readMetada",
+                    "FD: "+std::to_string(m_connFd)+
+                    " Metalen:"+std::to_string(m_metadataLen)+
+                    " Metadata: "+std::string(m_metadata,m_metadataLen));
     return err;    
 }
 int Protocol::Packet::readPayload()
@@ -141,6 +154,8 @@ int Protocol::Packet::readPayload()
     * 
     */
 
+    m_logger->trace("Packet::readPayload","Reading payload on FD:"+std::to_string(m_connFd));
+
     char buffer[9];
 
     int err=recv(m_connFd,buffer,8,0);
@@ -149,6 +164,7 @@ int Protocol::Packet::readPayload()
 
     buffer[8]='\0';
     m_payloadLen=atoi(buffer);
+    m_logger->trace("Packet::readPayload","FD: "+std::to_string(m_connFd)+" PayloadLen buffer:"+std::string(buffer));
 
     if(m_payloadLen==0)
     {
@@ -161,21 +177,36 @@ int Protocol::Packet::readPayload()
     //Notice that payload is not null terminated
     m_payload=new char[m_payloadLen];
     err=recv(m_connFd,m_payload,m_payloadLen,0);
+    m_logger->debug("Packet::readPayload",
+                    "FD: "+std::to_string(m_connFd)+
+                    " PayloadLen:"+std::to_string(m_payloadLen)+
+                    " Payload: "+std::string(m_payload,m_payloadLen));
     return err; 
 }
 int Protocol::Packet::readPacket()
 {
+    m_logger->trace("Packet::readPacket","Reading packet on FD:"+std::to_string(m_connFd));
+
     int err=readPacketType();
     if(err==-1)
+    {
+        m_logger->debug("Packet::readPacket","Packet type Incorrect on FD:"+std::to_string(m_connFd));
         return -1;
+    }
 
     err=readMetadata();
     if(err==-1)
+    {
+        m_logger->debug("Packet::readPacket","Metadata Incorrect on FD:"+std::to_string(m_connFd));
         return -2;
+    }
 
     err=readPayload();
     if(err==-1)
+    {
+        m_logger->debug("Packet::readPacket","Payload Incorrect on FD:"+std::to_string(m_connFd));
         return -3;
+    }
 
     return 0;
 }

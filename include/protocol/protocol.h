@@ -4,6 +4,8 @@
 #include<vector>
 #include<utility>
 
+#include "util.h"
+
 namespace Protocol
 {
     typedef enum{
@@ -16,12 +18,13 @@ namespace Protocol
             char *m_metadata;
             char *m_payload;
             int m_packetType,m_connFd,m_metadataLen,m_payloadLen;
+            Util::Logger *m_logger;
             Packet();
             int readPacketType();
             int readMetadata();
             int readPayload();
         public:
-            Packet(int);
+            Packet(int,Util::Logger*);
             ~Packet();
             int readPacket();
             const char* getMetadata() const;
