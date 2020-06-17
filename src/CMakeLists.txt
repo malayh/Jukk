@@ -18,24 +18,32 @@ target_include_directories(util PUBLIC ../include)
 # Executables
 add_executable(client client/client.cpp)
 add_executable(server server/serverapp.cpp)
-add_executable(tests test.cpp)
+# add_executable(tests test.cpp)
+
+# Tests and experiments
+add_executable(tests tests/testmain.cpp)
+add_executable(exp tests/experimentMain.cpp)
 
 # Linkings
-target_link_libraries(protocol
-                        PUBLIC util
+target_link_libraries(
+    protocol
+        PUBLIC util
 )
-target_link_libraries(client 
-                        PUBLIC protocol
-                        PUBLIC util
+target_link_libraries(
+    client 
+        PUBLIC protocol
+        PUBLIC util
 )
-target_link_libraries(tests 
-                        PUBLIC protocol
-                        PUBLIC util
-                        PUBLIC stateholder
-                        pthread
+target_link_libraries(
+    tests 
+        PUBLIC protocol
+        PUBLIC util
+        PUBLIC stateholder
+        pthread
 )
-target_link_libraries(server 
-                        PRIVATE tcpserver
-                        PRIVATE protocol
-                        pthread
+target_link_libraries(
+    server 
+        PRIVATE tcpserver
+        PRIVATE protocol
+        pthread
 )
