@@ -1,18 +1,44 @@
 #include<iostream>
-#include<sys/socket.h>
 #include<unistd.h>
 #include<string.h>
 
 #include "protocol/protocol.h"
 #include "util.h"
 
+/* 
+*   When __TESTING__ is defined:
+*   : To be able to use a file a socket. Idk if this the right way to do it or not
+*
+*   : recv will be replaced by read
+*   : send will be replaced by write*
+*/
+// #define __TESTING__
+
+#ifndef __TESTING__
+
+    #include<sys/socket.h>
+
+#else
+
+    int recv(int fd,void* buffer,int size,int flag)
+    {
+        return read(fd,buffer,size);
+    }
+    int send(int fd,void *buffer,int size,int flag)
+    {
+        return write(fd,buffer,size);
+    }
+
+#endif
+
+
+//-------- Protocol::Packet ---------------------------------
+
 /*
 *   Packet
 *   :   TCPServer reads packet.
 */
 
-
-//-------- Protocol::Packet ---------------------------------
 Protocol::Packet::Packet(){}
 Protocol::Packet::~Packet()
 {
@@ -160,6 +186,7 @@ int Protocol::Packet::getPayloadLen() const { return m_payloadLen; }
 int Protocol::Packet::getPacketType() const { return m_packetType; }
 int Protocol::Packet::getConnFd() const { return m_connFd; }
 
+
 //-------- Protocol::PackerBuffer --------------------------------
 /*
 *   Protocol::PacketBuffer
@@ -191,16 +218,18 @@ int Protocol::PacketBuffer::setPacketType(int type)
 
 int Protocol::PacketBuffer::putMetadata(const std::string &str)
 {
+
     if(!str.length())
         return 0;
 
-    char *meta = new char[str.length()+1];
-    memcpy(meta,str.c_str(),str.length()+1);
-    m_metadata.push_back(std::pair<int,char*>(str.length()+1,meta));
+    // Not putting the \0 from str.c_str() in meta
+    char *meta = new char[str.length()];
+    memcpy(meta,str.c_str(),str.length());
+    m_metadata.push_back(std::pair<int,char*>(str.length(),meta));
 
-    m_metaLen+=str.length()+1;
+    m_metaLen+=str.length();
 
-    return str.length()+1;
+    return str.length();
 }
 
 int Protocol::PacketBuffer::putMetadata(const char *str,int len)
@@ -222,13 +251,13 @@ int Protocol::PacketBuffer::putPayload(const std::string &str)
     if(!str.length())
         return 0;
 
-    char *pl = new char[str.length()+1];
-    memcpy(pl,str.c_str(),str.length()+1);
-    m_payload.push_back(std::pair<int,char*>(str.length()+1,pl));
+    char *pl = new char[str.length()];
+    memcpy(pl,str.c_str(),str.length());
+    m_payload.push_back(std::pair<int,char*>(str.length(),pl));
 
-    m_payloadLen+=str.length()+1;
+    m_payloadLen+=str.length();
 
-    return str.length()+1;
+    return str.length();
 }
 
 int Protocol::PacketBuffer::putPayload(const char *str,int len)
@@ -264,13 +293,13 @@ int Protocol::PacketBuffer::sendPacketOnFd(int fd)
     char buffer[9];
 
     // Sending packet type
-    lpadIntToStr(m_packetType,buffer,8);
+    Util::padIntToStr(m_packetType,buffer,8);
     err=send(fd,buffer,8,0);
     if(err==-1)
         return -2;
 
     // Sending metadata length
-    lpadIntToStr(m_metaLen,buffer,8);
+    Util::padIntToStr(m_metaLen,buffer,8);
     err=send(fd,buffer,8,0);
     if(err==-1)
         return -3;
@@ -284,7 +313,7 @@ int Protocol::PacketBuffer::sendPacketOnFd(int fd)
     }
     
     // sending payload lenght
-    lpadIntToStr(m_payloadLen,buffer,8);
+    Util::padIntToStr(m_payloadLen,buffer,8);
     err=send(fd,buffer,8,0);
     if(err==-1)
         return -4;
