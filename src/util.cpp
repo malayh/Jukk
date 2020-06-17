@@ -2,6 +2,9 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <cstring>
+#include <time.h>
+
 #include "util.h"
 
 int  Util::padIntToStr(int num,char *buffer, int len)
@@ -69,7 +72,6 @@ int Util::parseMapFromStr(const std::string &str, std::map<std::string,std::stri
     return 0;
 }
 
-
 int Util::parseStrFromMap(const std::map<std::string,std::string> &kv,std::string &str)
 {
     if(kv.empty())
@@ -84,4 +86,93 @@ int Util::parseStrFromMap(const std::map<std::string,std::string> &kv,std::strin
     }
     
     return 0;
+}
+
+// ------------ Logger ------------
+Util::Logger::Logger(const std::string &filepath,Util::Logger::Loglevel loglevel)
+{
+    m_filePath=new char[filepath.length()+1];
+    memcpy(m_filePath,filepath.c_str(),filepath.length());
+    m_filePath[filepath.length()]='\0';
+
+    m_logLevel=loglevel;    
+    m_logFile.open(m_filePath,std::ios::app);
+
+    m_timestampFormat="%T %d/%m/%y";
+}
+
+Util::Logger::~Logger()
+{
+    delete[] m_filePath;
+    m_logFile.close();
+}
+
+int Util::Logger::getCurrentTimestamp(char *buffer, int maxsize)
+{
+    if(maxsize<20)
+        return -1;
+
+    time_t t=time(NULL);
+    strftime(buffer,maxsize,m_timestampFormat.c_str(),localtime(&t));
+    return 0;
+}
+
+int Util::Logger::trace(const std::string &moduleName,const std::string &msg)
+{
+    if(m_logLevel<=Logger::TRACE)
+    {
+        char time[20];
+        getCurrentTimestamp(time,20);
+        m_fileMtx.lock();
+        m_logFile<<"TRACE: "<<time<<" :["<<moduleName<<"]: "<<msg<<std::endl;
+        m_fileMtx.unlock();
+    }
+}
+
+int Util::Logger::debug(const std::string &moduleName,const std::string &msg)
+{
+    if(m_logLevel<=Logger::DEBUG)
+    {
+        char time[20];
+        getCurrentTimestamp(time,20);
+        m_fileMtx.lock();
+        m_logFile<<"DEBUG: "<<time<<" :["<<moduleName<<"]: "<<msg<<std::endl;
+        m_fileMtx.unlock();
+    }
+}
+
+int Util::Logger::info(const std::string &moduleName,const std::string &msg)
+{
+    if(m_logLevel<=Logger::INFO)
+    {
+        char time[20];
+        getCurrentTimestamp(time,20);
+        m_fileMtx.lock();
+        m_logFile<<"INFO: "<<time<<" :["<<moduleName<<"]: "<<msg<<std::endl;
+        m_fileMtx.unlock();
+    }
+}
+
+int Util::Logger::warn(const std::string &moduleName,const std::string &msg)
+{
+    if(m_logLevel<=Logger::WARNING)
+    {
+        char time[20];
+        getCurrentTimestamp(time,20);
+        m_fileMtx.lock();
+        m_logFile<<"WARN: "<<time<<" :["<<moduleName<<"]: "<<msg<<std::endl;
+        m_fileMtx.unlock();
+    }
+}
+
+int Util::Logger::error(const std::string &moduleName,const std::string &msg)
+{
+    if(m_logLevel<=Logger::ERROR)
+    {
+        char time[20];
+        getCurrentTimestamp(time,20);
+        m_fileMtx.lock();
+        m_logFile<<"ERROR: "<<time<<" :["<<moduleName<<"]: "<<msg<<std::endl;
+        m_fileMtx.unlock();
+    }
 }
