@@ -7,7 +7,8 @@
 /*
     TCPServer
     :   TCPServer listens on a port and tries to read a packet from the connection fd.
-    If it can read a packet, TCPServer puts it to a PacketQueue that can be consumed by the users of TCP Server.
+    If it can read a packet, and puts it in a queue. User of the TCPServer can call getNextFd function
+    to get file desriptor
 
     initialize 
         :   initialized and binds the the server socket to desired port
@@ -16,17 +17,16 @@
 
     serverLoop 
         :   this is the main server loop, this runs on a thread, and listens for incomming connection
+    
+    getNextFd
+        :   The user of TCPServer can call this to get a file descritor to extract a packet from. Returns -1 if not fd is available
 
-    handleIncommingConnetion 
-        :   serverLoop creates a thread with this function, this function reads the packet from incomming
-        connection and put to the queue.
 */
 
-Server::TCPServer::TCPServer(int port,int connLimit,Server::PacketQueue *pQ,Util::Logger *lg)
+Server::TCPServer::TCPServer(int port,int connLimit,Util::Logger *lg)
 {
     m_port=port;
     m_connLimit=connLimit;
-    m_outputQueue=pQ;
     m_logger=lg;
 
     m_sAddr.sin_family=AF_INET;
@@ -76,25 +76,10 @@ void Server::TCPServer::start()
 void Server::TCPServer::terminate()
 {
     m_keepAlive=false;
+    m_queueMtx.lock();
+    m_serverLoop.~thread();
     m_serverLoop.join();
-
-}
-
-void Server::TCPServer::handleIncommingConnetion(int fd,Server::TCPServer *self)
-{
-    Protocol::Packet *packet = new Protocol::Packet(fd,self->m_logger);
-
-    int err=packet->readPacket();
-
-    if(err<0)
-    {
-        self->m_logger->trace("TCPServer::handleIncommingConnetion","Error reading packet on FD: "+std::to_string(fd));
-
-        delete packet;
-        return;
-    }
-
-    self->m_outputQueue->push(packet);
+    m_queueMtx.unlock();
 
 }
 
@@ -102,61 +87,32 @@ void Server::TCPServer::serverLoop(Server::TCPServer *self)
 {
     while(self->m_keepAlive)
     {
-        struct sockaddr_in cAddr;
-        socklen_t addrLen=sizeof(cAddr);
         int cFd=-1;
-        cFd=accept(self->m_serverFd,(sockaddr*)&cAddr,&addrLen);
+        cFd = accept(self->m_serverFd,NULL,NULL);
         self->m_logger->trace("TCPServer::serverLoop","Accecpted connection on FD: "+std::to_string(cFd));
 
         if(cFd<0)
             break;
 
-        std::thread _t(TCPServer::handleIncommingConnetion,cFd,self);
-        _t.detach();        
+        self->m_queueMtx.lock();
+        self->m_fdQueue.push(cFd);
+        self->m_queueMtx.unlock();     
     }
 }
 
-
-
-
-/*
-    PacketQueue
-    :   This is a thread safe queue the server puts incoming packets in, for users of the server
-    to consume them.
-*/
-
-
-Server::PacketQueue::PacketQueue(){}
-
-void Server::PacketQueue::push(Protocol::Packet *pkt)
+int Server::TCPServer::getNextFd()
 {
-    m_queueLock.lock();
-    m_queue.push(pkt);
-    m_queueLock.unlock();
-}
-
-Protocol::Packet* Server::PacketQueue::pop()
-{
-    Protocol::Packet *pkt;
-
-    m_queueLock.lock();
-    if(m_queue.empty())
-        pkt=nullptr;
-    else
+    /*
+    *   Returns -1 if queue is empty, else returns a valid FD to socket
+    */
+    int fd = -1;
+    m_queueMtx.lock();
+    if(!m_fdQueue.empty())
     {
-        pkt=m_queue.front();
-        m_queue.pop();
+        fd = m_fdQueue.front();
+        m_fdQueue.pop();
     }
-    m_queueLock.unlock();
-
-    return pkt;
-}
-
-bool Server::PacketQueue::isEmpty()
-{
-    bool ret;
-    m_queueLock.lock();
-    ret=m_queue.empty();
-    m_queueLock.unlock();
-    return ret;
+    
+    m_queueMtx.unlock();
+    return fd;
 }

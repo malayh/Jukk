@@ -14,17 +14,6 @@
 
 namespace Server
 {
-    class PacketQueue
-    {
-        private:
-            std::queue<Protocol::Packet*> m_queue;
-            std::mutex m_queueLock;
-        public:
-            void push(Protocol::Packet*);
-            Protocol::Packet* pop();
-            bool isEmpty();
-            PacketQueue();
-    };
 
     class TCPServer
     {
@@ -35,20 +24,21 @@ namespace Server
             std::atomic<bool> m_keepAlive;
             std::thread m_serverLoop;
 
-            PacketQueue *m_outputQueue;
+            std::mutex m_queueMtx;
+            std::queue<int> m_fdQueue;
 
             Util::Logger *m_logger;
 
             TCPServer();
-            static void handleIncommingConnetion(int,TCPServer*);
             static void serverLoop(TCPServer*);
 
         public:
             void start();
             void terminate();
             int initialize();
-            TCPServer(int,int,PacketQueue *,Util::Logger*);
+            TCPServer(int,int,Util::Logger*);
             ~TCPServer();
+            int getNextFd();
     };
 };
 
