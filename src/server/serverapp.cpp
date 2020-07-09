@@ -2,28 +2,32 @@
 #include<thread>
 #include<unistd.h>
 #include<vector>
+#include<cstring>
 
 #include "server/tcpserver.h"
 #include "util.h"
 
 int main()
 {
-    Server::PacketQueue queue;
     Util::Logger logger("../log/serverapp.log",Util::Logger::TRACE);
 
-    Server::TCPServer server(8080,500,&queue,&logger);
+    Server::TCPServer server(8080,500,&logger);
     int err=server.initialize();
     if(err<0)
     {
         exit(-1);
     }
+
     server.start();
 
-    std::vector<Protocol::Packet*> pkts;
+    const char *_pl=" Hello from client!Another Payload";
+    const char *_md="|somemeta|meta data";
+    int count;
 
     for(int i=0;i<100;i++)
     {
-        if(queue.isEmpty())
+        int fd = server.getNextFd();
+        if(fd == -1)
         {
             // std::cout<<"Nothing to read. Sleeping"<<std::endl;
             sleep(1);
@@ -31,25 +35,18 @@ int main()
         }
         else
         {
-            Protocol::Packet *pkt=queue.pop();
-            const char *meta=pkt->getMetadata();
-            const char *payload=pkt->getPayload();
-            
-            for(int i=0;i<pkt->getMetadataLen();i++)
-                std::cout<<meta[i];
-            std::cout<<std::endl;
 
-            for(int i=0;i<pkt->getPayloadLen();i++)
-                std::cout<<payload[i];
-            std::cout<<std::endl;
-            
-            std::cout<<pkt->getConnFd()<<std::endl<<std::endl;
-            pkts.push_back(pkt);            
+            Protocol::Packet pkt(fd,&logger);
+            pkt.readPacket();
+            const char *meta=pkt.getMetadata();
+            const char *payload=pkt.getPayload();
+            for(int i=0;i<pkt.getMetadataLen();i++)
+                std::cout<<meta[i];
+            // int cmp_m=strncmp(meta,_md,pkt.getMetadataLen());
+            // int cmp_p=strncmp(payload,_pl,pkt.getPayloadLen());
+            // std::cout<<cmp_m<<" "<<cmp_p<<std::endl;
+                      
         }
-    }
-    for(auto i: pkts)
-    {
-        delete i;
     }
     server.terminate();
 
