@@ -1,6 +1,7 @@
-#include "protocol/protocol.h"
-#include "server/stateholder.h"
-#include "server/tcpserver.h"
+#include<sys/socket.h>
+#include<netinet/in.h>
+#include<atomic>
+
 
 /*
 *   This  is the Jukk. This can act both as a server and a client. It will start as a client
@@ -22,6 +23,23 @@
         -Rest of the communication will happen using the client as an identifier for that particular conversation
 */
 
+
+class TCPServer_V2
+{
+        private:
+                int m_port, m_serverFd, m_connLimit;
+                struct sockaddr_in m_sAddr;
+                std::atomic<bool> m_keepAlive;                
+
+                TCPServer_V2();
+        public:
+                int getNextStreamFd();
+                int start();
+                int shutdown();
+                TCPServer_V2(int,int);
+                ~TCPServer_V2();
+
+};
 int main()
 {
 

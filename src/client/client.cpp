@@ -47,10 +47,10 @@ class TCPClient
         std::string meta="meta data";
         std::string payload=" Hello from client!";
 
-        pBuffer.putPayload("Another Payload");
+        pBuffer.putPayload(payload.c_str(),payload.length());
         pBuffer.putMetadata("|somemeta|");
         pBuffer.putMetadata(meta);
-        pBuffer.putPayload(payload.c_str(),payload.length());
+        pBuffer.putPayload("Another Payload");
         pBuffer.setPacketType(Protocol::HEART_BEAT);
         pBuffer.sendPacketOnFd(m_clientSocket);
         pBuffer.putMetadata("|sasdf|");

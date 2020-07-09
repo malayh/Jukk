@@ -125,6 +125,7 @@ int Util::Logger::trace(const std::string &moduleName,const std::string &msg)
         getCurrentTimestamp(time,20);
         m_fileMtx.lock();
         m_logFile<<"TRACE: "<<time<<" :["<<moduleName<<"]: "<<msg<<std::endl;
+        m_logFile.flush();
         m_fileMtx.unlock();
     }
 }
@@ -137,6 +138,7 @@ int Util::Logger::debug(const std::string &moduleName,const std::string &msg)
         getCurrentTimestamp(time,20);
         m_fileMtx.lock();
         m_logFile<<"DEBUG: "<<time<<" :["<<moduleName<<"]: "<<msg<<std::endl;
+        m_logFile.flush();
         m_fileMtx.unlock();
     }
 }
@@ -149,6 +151,7 @@ int Util::Logger::info(const std::string &moduleName,const std::string &msg)
         getCurrentTimestamp(time,20);
         m_fileMtx.lock();
         m_logFile<<"INFO: "<<time<<" :["<<moduleName<<"]: "<<msg<<std::endl;
+        m_logFile.flush();
         m_fileMtx.unlock();
     }
 }
@@ -161,6 +164,7 @@ int Util::Logger::warn(const std::string &moduleName,const std::string &msg)
         getCurrentTimestamp(time,20);
         m_fileMtx.lock();
         m_logFile<<"WARN: "<<time<<" :["<<moduleName<<"]: "<<msg<<std::endl;
+        m_logFile.flush();
         m_fileMtx.unlock();
     }
 }
@@ -173,6 +177,7 @@ int Util::Logger::error(const std::string &moduleName,const std::string &msg)
         getCurrentTimestamp(time,20);
         m_fileMtx.lock();
         m_logFile<<"ERROR: "<<time<<" :["<<moduleName<<"]: "<<msg<<std::endl;
+        m_logFile.flush();
         m_fileMtx.unlock();
     }
 }

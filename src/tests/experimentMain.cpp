@@ -7,6 +7,8 @@
 #include<sys/socket.h>
 #include<unistd.h>
 #include<time.h>
+#include<fstream>
+#include<string.h>
 
 void readFromFileAsSocket()
 {
@@ -49,10 +51,30 @@ void timeStamp()
     std::cout<<buffer<<std::endl;
 }
 
+struct exp_New
+{
+    int n;
+    char *arr;
+};
+void serializeStruct()
+{
+    const char *s="asdfagsdflfiugaskdffadfgjkawf";
+    struct exp_New arr;
+    arr.arr=new char[strlen(s)];
+    memcpy(arr.arr,s,strlen(s));
+    arr.n=strlen(s);
+
+    std::fstream fbin("../resource/exp/struct.bin",std::ios::out|std::ios::binary);
+    fbin.write((char*)&arr,sizeof(arr));
+    fbin.close();
+
+}
+
 int main()
 {
     // readFromFileAsSocket();
     // fileAndLineMacro();
-    timeStamp();
+    // timeStamp();
+    serializeStruct();
     return 0;
 }
